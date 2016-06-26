@@ -1,0 +1,1 @@
+const CRLF = "\r\n"
