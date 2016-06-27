@@ -11,6 +11,3 @@ end
 
 close(x::RedisConnection) = close(x.socket)
 status(x::RedisConnection) = x.socket.status
-write(x::RedisConnection, y) = write(x.socket, y)
-read(x::RedisConnection, y) = read(x.socket, y)
-readbytes(x::RedisConnection, y) = readbytes(x.socket, y)

@@ -3,8 +3,8 @@ protocol: http://redis.io/topics/protocol#resp-protocol-description
 possible return types: Int64, ByteString, Vector, Void
 """
 function wait(conn::RedisConnection)
-    magic_byte = conn >> Byte
-    line = conn |> readline |> chomp!
+    magic_byte = conn.socket >> Byte
+    line = conn.socket |> readline |> chomp!
 
     if magic_byte == '+'
         line
@@ -15,7 +15,7 @@ function wait(conn::RedisConnection)
     elseif magic_byte == '$'
         line[1] == '-' && return nothing
         len = parse(Int64, line)
-        conn >> (len + 2) |> ByteString |> chomp!
+        conn.socket >> (len + 2) |> ByteString |> chomp!
     elseif magic_byte == '*'
         line[1] == '-' && return nothing
         len = parse(Int64, line)
