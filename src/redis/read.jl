@@ -15,11 +15,11 @@ function wait(conn::RedisConnection)
     elseif magic_byte == '$'
         line[1] == '-' && return nothing
         len = parse(Int64, line)
-        conn.socket >> (len + 2) |> ByteString |> chomp!
+        conn.socket >> (len + 2) |> bytestring |> chomp!
     elseif magic_byte == '*'
         line[1] == '-' && return nothing
         len = parse(Int64, line)
-        [receive(conn) for i in 1:len]
+        [wait(conn) for i in 1:len]
     else
         ProtocolException("unexpected type $(Char(magic_byte))") |> throw
     end
