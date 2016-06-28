@@ -1,8 +1,8 @@
 export RedisBitVector, SubRedisBitVector
 
-immutable RedisBitVector <: AbstractVector{Bool}
+immutable RedisBitVector # <: AbstractVector{Bool}
     conn::RedisConnection
-    key::ASCIIString
+    key::ByteString
 end
 
 function getindex(rbv::RedisBitVector, index::Int64)

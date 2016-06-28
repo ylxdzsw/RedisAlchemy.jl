@@ -12,3 +12,8 @@ end
 immutable RedisException <: Exception
     message::AbstractString
 end
+
+"when timeout expired"
+immutable TimeoutException <: Exception
+    message::AbstractString
+end
