@@ -11,9 +11,9 @@ include("util.jl")
 include("exceptions.jl")
 include("serializer.jl")
 
-include("redis/client.jl")
-include("redis/read.jl")
-include("redis/write.jl")
+include("redis/connection.jl")
+include("redis/resp.jl")
+include("redis/exec.jl")
 
 include("collections/bit.jl")
 include("collections/list.jl")

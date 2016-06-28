@@ -4,7 +4,7 @@ export RedisPipe, SafeRedisPipe, RedisBlockedQueue, SafeRedisBlockedQueue,
 abstract AbstractRedisPipe{T} # <: Base.AbstractPipe
 
 immutable RedisPipe{T} <: AbstractRedisPipe{T}
-    conn::RedisConnection
+    conn::AbstractRedisConnection
     key::ByteString
 
     RedisPipe(conn, key) = if serializeable(T)
@@ -15,7 +15,7 @@ immutable RedisPipe{T} <: AbstractRedisPipe{T}
 end
 
 immutable SafeRedisPipe{T} <: AbstractRedisPipe{T}
-    conn::RedisConnection
+    conn::AbstractRedisConnection
     key::ByteString
 
     SafeRedisPipe(conn, key) = if serializeable(T)
@@ -67,4 +67,4 @@ typealias RedisBlockedQueue RedisPipe
 typealias SafeRedisBlockedQueue SafeRedisPipe
 
 dequeue!{T}(rbq::AbstractRedisBlockedQueue{T}, timeout::Integer=0) = read(rbq, timeout)
-enqueue!{T}(rbq::AbstractRedisBlockedQueue{T}, timeout::Integer=0) = write(rbq, timeout)
+enqueue!{T}(rbq::AbstractRedisBlockedQueue{T}, value) = write(rbq, value)
