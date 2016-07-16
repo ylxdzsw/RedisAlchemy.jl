@@ -1,9 +1,14 @@
 RedisAlchemy.jl
 ===============
 
-RedisAlchemy.jl provides some "high-level" collections connected to a a Redis server.
+RedisAlchemy.jl provides some "high-level" collections connected to a Redis server.
 
 inspired by [Redis.jl](https://github.com/jkaye2012/Redis.jl).
+
+key features:
+
+- easy to use: "high-level" API like native Julia Collection, no need to learn Redis.
+- ready for async: connections are locked automaticlly; support connection pools.
 
 ### Install
 
@@ -13,14 +18,14 @@ Pkg.clone("git@github.com:ylxdzsw/RedisAlchemy.jl.git","RedisAlchemy")
 
 ### Connections
 
-RedisAlchemy.jl provides two connection type: `RedisConnection` and `RedisConnectionPool`.
+RedisAlchemy.jl provides two connection type: `RedisConnection` and `RedisConnectionPool`. They are interchangeable in all APIs.
 
 ```
 conn = RedisConnection(host="127.0.0.1", port=6379, password="", db=0)
 connpool = RedisConnectionPool(10, host="127.0.0.1", port=6379, password="", db=0)
 ```
 
-the first argument of `RedisConnectionPool` is the max connection number. All the arguments above are the default value, which can be ommited.
+the first argument of `RedisConnectionPool` is the max connection number. All the arguments above are the defaults, thus can be ommited.
 
 In most cases, you don't have to use the connection pool. However, when using `RedisPipe` or somthing like this, which blocks the socket, you must use pools to circumvent dead locks.
 
@@ -66,3 +71,13 @@ Tips:
 ### Safe Versions
 
 Almost every redis collection has a coresponding "safe" version, which provides exactly the same API, but return a Nullable rather than throw Exceptions if key not exists.
+
+### Direct Access
+
+Sometimes you may want to access the underlying Redis directly, RedisAlchemy.jl provides a `exec` API to run simple commands.
+
+```
+res = exec(conn, "rpoplpush", "list1", "list2")
+```
+
+The responsed type is one of `Int64`, `ByteString`, `Vector` and `Void`.

@@ -1,4 +1,4 @@
-export RedisBitVector, SubRedisBitVector
+export RedisBitVector
 
 immutable RedisBitVector # <: AbstractVector{Bool}
     conn::AbstractRedisConnection
@@ -54,7 +54,7 @@ function (~)(rbv::RedisBitVector)
 end
 
 "Caution: Redis consider the right of the string as padded with zeros, so it may act unexpectly when finding `false`"
-function findfirst(rbv::RedisBitVector, v::Bool)
+function findfirst(rbv::RedisBitVector, v::Bool=true)
     exec(rbv.conn, "bitpos", rbv.key, v?"1":"0")
     1 + wait(rbv.conn)::Int64
 end

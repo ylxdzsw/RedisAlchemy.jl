@@ -4,7 +4,7 @@ macro gen_entry(n)
     var(n) = [symbol("x", x) for x in 1:n]
     str(n) = [:(bytestring(string($x))) for x in var(n)]
     f = [:(call_redis(socket::TCPSocket, $(var(x)...)) = resp_send(socket, $(str(x)...)) |> resp_read;) for x in 1:n]
-    :( $(f...) )
+    quote $(map(esc, f)...) end
 end
 
 @gen_entry 6

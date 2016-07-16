@@ -1,6 +1,6 @@
 export RedisList, SafeRedisList
 
-abstract AbstractRedisList{T}
+abstract AbstractRedisList{T} # <: AbstractVector{T}
 
 immutable RedisList{T} <: AbstractRedisList{T}
     conn::AbstractRedisConnection
@@ -26,7 +26,7 @@ end
 
 function getindex{T}(rv::RedisList{T}, index::Int64)
     res = exec(rv.conn, "lindex", rv.key, zero_index(index))
-    res == nothing && throw(BoundsError(rv.conn, index))
+    res == nothing && throw(BoundsError(rv, index))
     deserialize(T, res)
 end
 
@@ -43,11 +43,11 @@ end
 
 function getindex{T}(rv::AbstractRedisList{T}, x::Integer, y::Integer)
     res = exec(rv.conn, "lrange", rv.key, zero_index(x), zero_index(y))
-    res == nothing && throw(BoundsError(rv.conn, index))
+    res == nothing && throw(BoundsError(rv, index))
     T[deserialize(T, i) for i in res]
 end
 
-function getindex{T}(rv::AbstractRedisList{T}, x::UnitRange)
+function getindex{T, S<:Integer}(rv::AbstractRedisList{T}, x::UnitRange{S})
     rv[Int(x.start), Int(x.stop)]
 end
 
@@ -55,8 +55,8 @@ function setindex!{T}(rv::AbstractRedisList{T}, value, index::Int64)
     exec(rv.conn, "lset", rv.key, zero_index(index), serialize(T(value)))
 end
 
-function setindex!{T}(rv::AbstractRedisList{T}, value::AbstractList, ::Colon)
-    error("not implemented yet")
+function collect(rv::AbstractRedisList)
+    rv[:]
 end
 
 function unshift!{T}(rv::AbstractRedisList{T}, value)
@@ -132,12 +132,12 @@ end
 
 function sort!{T<:Number}(rv::AbstractRedisList{T}; rev::Bool=false)
     order = rev ? "desc" : "asc"
-    exec(rv.conn, "sort", rv.key, order, "store", rv.key) # returns the length
+    exec(rv.conn, "sort", rv.key, order, "store", rv.key)::Int64 # returns the length
 end
 
 function sort!{T<:ByteString}(rv::AbstractRedisList{T}; rev::Bool=false)
     order = rev ? "desc" : "asc"
-    exec(rv.conn, "sort", rv.key, "alpha", order, "store", rv.key)
+    exec(rv.conn, "sort", rv.key, "alpha", order, "store", rv.key)::Int64
 end
 
 function show{T}(io::IO, rv::AbstractRedisList{T})
