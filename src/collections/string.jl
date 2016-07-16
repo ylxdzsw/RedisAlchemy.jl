@@ -32,7 +32,7 @@ end
 
 function getindex(rs::RedisString, ::Colon=Colon())
     res = exec(rs.conn, "get", rs.key)
-    res == nothing && throw(NullException())
+    res == nothing && throw(KeyError(rs.key))
     res |> bytestring
 end
 
@@ -60,7 +60,7 @@ function setindex!(rs::AbstractRedisString, value, ::Colon=Colon())
 end
 
 "this methods should always be used in the form of `rs += xx`"
-function (+)(rs::SafeRedisString, value)
+function (+)(rs::AbstractRedisString, value)
     exec(rs.conn, "append", rs.key, value)
     rs
 end
