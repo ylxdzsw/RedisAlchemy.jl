@@ -12,6 +12,8 @@ immutable RedisPipe{T} <: AbstractRedisPipe{T}
     else
         throw(ArgumentError("RedisPipe currently not supports arbitrary element type"))
     end
+
+    RedisPipe(key) = RedisPipe{T}(default_connection, key)
 end
 
 immutable SafeRedisPipe{T} <: AbstractRedisPipe{T}
@@ -23,6 +25,8 @@ immutable SafeRedisPipe{T} <: AbstractRedisPipe{T}
     else
         throw(ArgumentError("SafeRedisPipe currently not supports arbitrary element type"))
     end
+
+    SafeRedisPipe(key) = SafeRedisPipe{T}(default_connection, key)
 end
 
 reply{T}(rp::AbstractRedisPipe{T}, x::Any) = throw(ProtocolException("unexpected return value $x"))

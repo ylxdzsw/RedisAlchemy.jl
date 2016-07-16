@@ -7,6 +7,6 @@ serialize(x::Integer) = string(x)
 serialize(x::AbstractFloat) = string(x)
 serialize(x::ByteString) = x
 
-deserialize{T<:Integer}(::Type{T}, x::AbstractString) = parse(T, x)
-deserialize{T<:AbstractFloat}(::Type{T}, x::AbstractString) = parse(T, x)
-deserialize{T<:ByteString}(::Type{T}, x::AbstractString) = bytestring(x)
+deserialize{T<:Integer}(::Type{T}, x::Bytes) = parse(T, bytestring(x))
+deserialize{T<:AbstractFloat}(::Type{T}, x::Bytes) = parse(T, bytestring(x))
+deserialize{T<:ByteString}(::Type{T}, x::Bytes) = bytestring(x)

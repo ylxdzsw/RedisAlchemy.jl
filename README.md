@@ -10,7 +10,7 @@ key features:
 - easy to use: "high-level" API like native Julia Collection, no need to learn Redis.
 - ready for async: connections are locked automaticlly; support connection pools.
 
-### Install
+### Installation
 
 ```
 Pkg.clone("git@github.com:ylxdzsw/RedisAlchemy.jl.git","RedisAlchemy")
@@ -72,6 +72,36 @@ Tips:
 
 Almost every redis collection has a coresponding "safe" version, which provides exactly the same API, but return a Nullable rather than throw Exceptions if key not exists.
 
+### Serialize
+
+RedisAlchemy collections only support subtypes of `ByteString`, `Integer` and `AbstractFloat` as elements. To store arbitrary elements in RedisAlchemy collections, you need to implement `serializeable`, `serialize` and `deserialize` for the element type. Here is an example shows how to do it.
+
+```
+immutable Point{T<:Integer}
+    x::T
+    y::T
+end
+
+# 1: set serializeable return true for that type
+RedisAlchemy.serializeable{T<:Integer}(::Type{Point{T}}) = true
+
+# 2: serialize takes an argument of that type, and returns either a ByteString or a Vector{UInt8}
+RedisAlchemy.serialize{T<:Integer}(p::Point{T}) = string(p.x, ',', p.y)
+
+# 3: deserialize takes Vector{UInt8} as input, recovers the origin element
+RedisAlchemy.deserialize{T<:Integer}(::Type{Point{T}}, s::Vector{UInt8}) = begin
+    s = split(bytestring(s), ',')
+    x = parse(T, s[1])
+    y = parse(T, s[2])
+    Point{T}(x, y)
+end
+
+# now you can make RedisAlchemy collections of that type.
+points = RedisList{Point{Int64}}(conn, "key")
+```
+
+You can make use of `Base.serialize` and `Base.deserialize` to implement these methods. However, They are hard to be read by other programs, even by Julia of different versions. So instead we suggest use self-explanatory string representations.
+
 ### Direct Access
 
 Sometimes you may want to access the underlying Redis directly, RedisAlchemy.jl provides a `exec` API to run simple commands.
@@ -80,4 +110,4 @@ Sometimes you may want to access the underlying Redis directly, RedisAlchemy.jl 
 res = exec(conn, "rpoplpush", "list1", "list2")
 ```
 
-The responsed type is one of `Int64`, `ByteString`, `Vector` and `Void`.
+The responsed type is one of `Int64`, `ByteString`, `Vector`, `Vector{UInt8}` and `Void`.

@@ -1,6 +1,12 @@
-export RedisConnection, RedisConnectionPool
+export RedisConnection, RedisConnectionPool, set_default_redis_connection
 
 abstract AbstractRedisConnection
+
+default_connection = nothing
+
+function set_default_redis_connection(x::AbstractRedisConnection)
+    global default_connection = x
+end
 
 function connect_redis(host::ASCIIString, port::Int, password::ByteString, db::Int)
     connection = connect(host, port)

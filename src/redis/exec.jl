@@ -1,15 +1,6 @@
 export exec
 
-macro gen_entry(n)
-    var(n) = [symbol("x", x) for x in 1:n]
-    str(n) = [:(bytestring(string($x))) for x in var(n)]
-    f = [:(call_redis(socket::TCPSocket, $(var(x)...)) = resp_send(socket, $(str(x)...)) |> resp_read;) for x in 1:n]
-    quote $(map(esc, f)...) end
-end
-
-@gen_entry 6
-
-call_redis(socket::TCPSocket, x...) = resp_send(socket, map(bytestring∘string, x)...) |> resp_read
+call_redis(socket::TCPSocket, x...) = resp_send(socket, map(bytify, x)...) |> resp_read
 
 exec(conn::RedisConnection, x...) = begin
     acquire(conn)
@@ -29,3 +20,10 @@ exec(pool::RedisConnectionPool, x...) = begin
         notify(pool.cond, all=false)
     end
 end
+
+bytify(x::Integer) = string(x)
+bytify(x::AbstractFloat) = string(x)
+bytify(x::AbstractString) = bytestring(x)
+bytify(x::Bytes) = x
+bytify(x::Byte) = x
+bytify(x::ByteString) = x

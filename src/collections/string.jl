@@ -7,15 +7,19 @@ immutable RedisString <: AbstractRedisString
     key::ByteString
 end
 
+RedisString(key) = RedisString(default_connection, key)
+
 immutable SafeRedisString <: AbstractRedisString
     conn::AbstractRedisConnection
     key::ByteString
 end
 
+SafeRedisString(key) = SafeRedisString(default_connection, key)
+
 "NOTE: Redis count index by byte, while julia count by char"
 function getindex(rs::AbstractRedisString, x::Integer, y::Integer)
     # it is always not null: non-exist keys are treated as empty string by redis
-    exec(rs.conn, "getrange", rs.key, zero_index(x), zero_index(y))::ByteString
+    exec(rs.conn, "getrange", rs.key, zero_index(x), zero_index(y)) |> bytestring
 end
 
 function getindex{T<:Integer}(rs::AbstractRedisString, x::UnitRange{T})
@@ -29,11 +33,13 @@ end
 function getindex(rs::RedisString, ::Colon=Colon())
     res = exec(rs.conn, "get", rs.key)
     res == nothing && throw(NullException())
-    res::ByteString
+    res |> bytestring
 end
 
 function getindex(rs::SafeRedisString, ::Colon=Colon())
-    exec(rs.conn, "get", rs.key) |> Nullable{ByteString}
+    res = exec(rs.conn, "get", rs.key)
+    res == nothing ? Nullable{ByteString}() :
+                     Nullable{ByteString}(bytestring(res))
 end
 
 function setindex!(rs::AbstractRedisString, value, offset::Integer)
@@ -62,6 +68,10 @@ end
 "NOTE: Redis count length by byte, while julia count by char"
 function length(rs::AbstractRedisString)
     exec(rs.conn, "strlen", rs.key)::Int64
+end
+
+function endof(rs::AbstractRedisString)
+    length(rs)
 end
 
 function string(rs::AbstractRedisString)

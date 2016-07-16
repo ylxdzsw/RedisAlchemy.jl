@@ -11,6 +11,8 @@ immutable RedisList{T} <: AbstractRedisList{T}
     else
         throw(ArgumentError("RedisList currently not supports arbitrary element type"))
     end
+
+    RedisList(key) = RedisList{T}(default_connection, key)
 end
 
 immutable SafeRedisList{T} <: AbstractRedisList{T}
@@ -22,6 +24,8 @@ immutable SafeRedisList{T} <: AbstractRedisList{T}
     else
         throw(ArgumentError("SafeRedisList currently not supports arbitrary element type"))
     end
+
+    SafeRedisList(key) = SafeRedisList{T}(default_connection, key)
 end
 
 function getindex{T}(rv::RedisList{T}, index::Int64)
