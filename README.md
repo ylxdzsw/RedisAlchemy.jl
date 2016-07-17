@@ -67,6 +67,7 @@ Tips:
 
 - `RedisList` also support negative index, which means `end-x` in julia. You can use it in the form like `list[0, -1]`. This is considered faster and more reliable than `end-x`, because the latter use an extra query to get the length.
 - Don't use `while !isempty(list) pop!(list)` pattern, use `SafeRedisList` and `pop!` it directly, then check if the returned value is null.
+- `RedisList` was considered as `queue` or `stack`, rather than random-access array. If you want to save a series of fixed-length elements (like time series), try `RedisBlob`
 
 ### Safe Versions
 

@@ -43,7 +43,7 @@ function getindex(rs::SafeRedisString, ::Colon=Colon())
 end
 
 function setindex!(rs::AbstractRedisString, value, offset::Integer)
-    exec(rs.conn, "setrange", rs.key, offset, value)
+    exec(rs.conn, "setrange", rs.key, zero_index(offset), value)
     rs
 end
 

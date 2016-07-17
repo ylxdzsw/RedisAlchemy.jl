@@ -41,7 +41,7 @@ function getindex(rb::SafeRedisBlob, ::Colon=Colon())
 end
 
 function setindex!(rb::AbstractRedisBlob, value, offset::Integer)
-    exec(rb.conn, "setrange", rb.key, offset, value)
+    exec(rb.conn, "setrange", rb.key, zero_index(offset), value)
     rb
 end
 
@@ -77,8 +77,8 @@ end
 
 abstract RedisBlobHandle # <: IO
 
-immutable BufferedHandle{mode} <: RedisBlobHandle
-    rb::AbstractRedisBlob
+type BufferedHandle{mode} <: RedisBlobHandle
+    rb::RedisBlob
     buffer::IOBuffer
 
     BufferedHandle(rb) = if mode == :r
@@ -89,9 +89,15 @@ immutable BufferedHandle{mode} <: RedisBlobHandle
     end
 end
 
-immutable SeekableHandle{mode} <: RedisBlobHandle
-    rb::AbstractRedisBlob
+type SeekableHandle{mode} <: RedisBlobHandle
+    rb::RedisBlob
     ptr::Int
+
+    SeekableHandle(rb) = begin
+        mode == :w && (rb[] = "")
+        rb = RedisBlob(rb.conn, rb.key)
+        new(rb, 1)
+    end
 end
 
 function open(rb::RedisBlob, mode="r")
@@ -117,8 +123,8 @@ function read(bh::BufferedHandle{:r}, args...)
     read(bh.buffer, args...)
 end
 
-function readall(bh::BufferedHandle{:r}, args...)
-    readall(bh.buffer, args...)
+function readbytes(bh::BufferedHandle{:r}, args...)
+    readbytes(bh, args...)
 end
 
 function write(bh::BufferedHandle{:w}, args...)
@@ -137,12 +143,92 @@ function flush(bh::BufferedHandle{:a})
     bh.rb += takebuf_array(bh.buffer)
 end
 
+function close(bh::BufferedHandle{:r})
+    close(bh.buffer)
+end
+
 function close(bh::BufferedHandle{:w})
     flush(bh)
+    close(bh.buffer)
 end
 
 function close(bh::BufferedHandle{:a})
     flush(bh)
+    close(bh.buffer)
+end
+
+function eof(bh::BufferedHandle)
+    eof(bh.buffer)
+end
+
+function read(sh::SeekableHandle, T::Type)
+    read(sh, T, 1)[1]
+end
+
+function read(sh::SeekableHandle, T::Type, dims::Int64...)
+    s = *(T.size, dims...)
+    buffer = readbytes(sh, s)
+    length(buffer) != s && throw(EOFError())
+    reinterpret(T, buffer, dims)
+end
+
+function readbytes(sh::SeekableHandle, nb::Int)
+    nb > 0 || error("invalid Array dimensions")
+    buffer = sh.rb[sh.ptr, sh.ptr + nb - 1]
+    sh.ptr += length(buffer)
+    buffer
+end
+
+function readbytes(sh::SeekableHandle)
+    buffer = sh.rb[sh.ptr, -1]
+    sh.ptr += length(buffer)
+    buffer
+end
+
+function write(sh::SeekableHandle, bytes::Bytes)
+    sh.rb[sh.ptr] = bytes
+    sh.ptr += length(bytes)
+    length(bytes)
+end
+
+function write(sh::SeekableHandle{:a}, bytes::Bytes)
+    sh.rb += bytes
+    length(bytes)
+end
+
+function write(sh::SeekableHandle, args...)
+    buffer = IOBuffer()
+    write(buffer, args...)
+    write(sh, buffer.data)
+end
+
+"seek(handle, offset, origin), origin can be on of `:SEEK_SET`, `:SEEK_CUR` and `SEEK_END`"
+function seek(sh::SeekableHandle, offset::Int, origin::Symbol=:SEEK_SET)
+    len = endof(sh.rb)
+    pos = origin == :SEEK_SET ? 1      :
+          origin == :SEEK_CUR ? sh.ptr :
+          origin == :SEEK_END ? len+1  :
+          throw(ArgumentError("unknown origin parameter"))
+    pos += offset
+    pos = max(pos, 1)
+    pos = min(pos, len+1)
+    sh.ptr = pos
+end
+
+function seekstart(sh::SeekableHandle)
+    seek(sh, 0, :SEEK_SET)
+end
+
+function seekend(sh::SeekableHandle)
+    seek(sh, 0, :SEEK_END)
+end
+
+function close(sh::SeekableHandle)
+    # do nothing
+end
+
+function eof(sh::SeekableHandle)
+    sh.ptr > endof(sh.rb)
 end
 
 function show{T<:RedisBlobHandle}(io::IO, rbh::T)
