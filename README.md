@@ -69,6 +69,40 @@ Tips:
 - Don't use `while !isempty(list) pop!(list)` pattern, use `SafeRedisList` and `pop!` it directly, then check if the returned value is null.
 - `RedisList` was considered as `queue` or `stack`, rather than random-access array. If you want to save a series of fixed-length elements (like time series), try `RedisBlob`
 
+### Blob
+
+`RedisBlob` can be used to save binary files or array.
+
+```
+julia> r = RedisBlob(conn, "testarray")
+RedisBlob(RedisAlchemy.RedisConnectionPool("127.0.0.1",6379,"",0,9,[TCPSocket(open, 0 bytes waiting)],Condition(Any[])), "testarray")
+
+julia> a = rand(1:100, 4, 4)
+4x4 Array{Int64,2}:
+ 41  38  17  55
+ 12  81  71  43
+ 58  54  80  92
+ 59  82  27  52
+
+julia> r[] = reinterpret(UInt8, a, (4 * 4 * 8,))
+128-element Array{UInt8,1}:
+ ...
+
+julia> b = reinterpret(Int, r[], (4, 4))
+4x4 Array{Int64,2}:
+ 41  38  17  55
+ 12  81  71  43
+ 58  54  80  92
+ 59  82  27  52
+
+# read a specific element
+julia> open(r, "r+") do f
+         seek(f, (sub2ind((4,4), 2, 2) - 1) * 8) # `seek` counts from 0
+         read(f, Int) |> println
+       end
+81
+```
+
 ### Safe Versions
 
 Almost every redis collection has a coresponding "safe" version, which provides exactly the same API, but return a Nullable rather than throw Exceptions if key not exists.
