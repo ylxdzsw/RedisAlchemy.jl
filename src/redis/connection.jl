@@ -8,7 +8,7 @@ function set_default_redis_connection(x::AbstractRedisConnection)
     global default_connection = x
 end
 
-function connect_redis(host::ASCIIString, port::Int, password::ByteString, db::Int)
+function connect_redis(host::String, port::Int, password::String, db::Int)
     connection = connect(host, port)
     # TODO send password and select db
 end
@@ -36,9 +36,9 @@ acquire(x::RedisConnection) = begin
 end
 
 type RedisConnectionPool <: AbstractRedisConnection
-    host::ASCIIString
+    host::String
     port::Int
-    password::ByteString
+    password::String
     db::Int
     upperbound::Int
     queue::Vector{TCPSocket}

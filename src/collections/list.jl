@@ -4,7 +4,7 @@ abstract AbstractRedisList{T} # <: AbstractVector{T}
 
 immutable RedisList{T} <: AbstractRedisList{T}
     conn::AbstractRedisConnection
-    key::ByteString
+    key::String
 
     RedisList(conn, key) = if serializeable(T)
         new(conn, key)
@@ -17,7 +17,7 @@ end
 
 immutable SafeRedisList{T} <: AbstractRedisList{T}
     conn::AbstractRedisConnection
-    key::ByteString
+    key::String
 
     SafeRedisList(conn, key) = if serializeable(T)
         new(conn, key)
@@ -128,7 +128,7 @@ function sort{T<:Number}(rv::AbstractRedisList{T}; rev::Bool=false)
     T[deserialize(T, i) for i in res]
 end
 
-function sort{T<:ByteString}(rv::AbstractRedisList{T}; rev::Bool=false)
+function sort{T<:AbstractString}(rv::AbstractRedisList{T}; rev::Bool=false)
     order = rev ? "desc" : "asc"
     res = exec(rv.conn, "sort", rv.key, "alpha", order)
     T[deserialize(T, i) for i in res]
@@ -139,7 +139,7 @@ function sort!{T<:Number}(rv::AbstractRedisList{T}; rev::Bool=false)
     exec(rv.conn, "sort", rv.key, order, "store", rv.key)::Int64 # returns the length
 end
 
-function sort!{T<:ByteString}(rv::AbstractRedisList{T}; rev::Bool=false)
+function sort!{T<:AbstractString}(rv::AbstractRedisList{T}; rev::Bool=false)
     order = rev ? "desc" : "asc"
     exec(rv.conn, "sort", rv.key, "alpha", order, "store", rv.key)::Int64
 end

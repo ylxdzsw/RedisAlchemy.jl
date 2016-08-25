@@ -4,14 +4,14 @@ abstract AbstractRedisBlob # <: Bytes
 
 immutable RedisBlob <: AbstractRedisBlob
     conn::AbstractRedisConnection
-    key::ByteString
+    key::String
 end
 
 RedisBlob(key) = RedisBlob(default_connection, key)
 
 immutable SafeRedisBlob <: AbstractRedisBlob
     conn::AbstractRedisConnection
-    key::ByteString
+    key::String
 end
 
 SafeRedisBlob(key) = SafeRedisBlob(default_connection, key)

@@ -23,7 +23,7 @@ end
 
 bytify(x::Integer) = string(x)
 bytify(x::AbstractFloat) = string(x)
-bytify(x::AbstractString) = bytestring(x)
+bytify(x::AbstractString) = String(x)
 bytify(x::Bytes) = x
 bytify(x::Byte) = x
-bytify(x::ByteString) = x
+bytify(x::String) = x

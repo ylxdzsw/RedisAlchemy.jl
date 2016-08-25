@@ -11,7 +11,7 @@ function resp_send(socket::TCPSocket, commands...)
     socket
 end
 
-"possible return types: Int64, ASCIIString, Bytes, Vector and Void"
+"possible return types: Int64, String, Bytes, Vector and Void"
 function resp_read(socket::TCPSocket)
     magic_byte = socket >> Byte
     line = socket |> readline |> chomp!

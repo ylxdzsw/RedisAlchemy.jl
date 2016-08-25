@@ -2,7 +2,7 @@ export RedisBitVector
 
 immutable RedisBitVector # <: AbstractVector{Bool}
     conn::AbstractRedisConnection
-    key::ByteString
+    key::String
 end
 
 function getindex(rbv::RedisBitVector, index::Int64)
@@ -58,5 +58,3 @@ function findfirst(rbv::RedisBitVector, v::Bool=true)
     exec(rbv.conn, "bitpos", rbv.key, v?"1":"0")
     1 + wait(rbv.conn)::Int64
 end
-
-findfirst(rbv::RedisBitVector) = findfirst(rbv, true)

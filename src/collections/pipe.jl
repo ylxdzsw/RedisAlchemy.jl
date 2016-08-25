@@ -5,7 +5,7 @@ abstract AbstractRedisPipe{T} # <: Base.AbstractPipe
 
 immutable RedisPipe{T} <: AbstractRedisPipe{T}
     conn::AbstractRedisConnection
-    key::ByteString
+    key::String
 
     RedisPipe(conn, key) = if serializeable(T)
         new(conn, key)
@@ -18,7 +18,7 @@ end
 
 immutable SafeRedisPipe{T} <: AbstractRedisPipe{T}
     conn::AbstractRedisConnection
-    key::ByteString
+    key::String
 
     SafeRedisPipe(conn, key) = if serializeable(T)
         new(conn, key)
@@ -33,10 +33,10 @@ reply{T}(rp::AbstractRedisPipe{T}, x::Any) = throw(ProtocolException("unexpected
 reply{T}(rp::AbstractRedisPipe{T}, x::Vector) = reply(rp, x[2])
 
 reply{T}(rp::RedisPipe{T}, ::Void) = throw(TimeoutException("timeout"))
-reply{T}(rp::RedisPipe{T}, x::ByteString) = deserialize(T, x)
+reply{T}(rp::RedisPipe{T}, x::String) = deserialize(T, x)
 
 reply{T}(rp::SafeRedisPipe{T}, ::Void) = Nullable{T}()
-reply{T}(rp::SafeRedisPipe{T}, x::ByteString) = Nullable(deserialize(T, x))
+reply{T}(rp::SafeRedisPipe{T}, x::String) = Nullable(deserialize(T, x))
 
 function read{T}(rp::AbstractRedisPipe{T}, timeout::Integer=0)
     timeout < 0 && throw(ArgumentError("timeout must be non-negative"))
