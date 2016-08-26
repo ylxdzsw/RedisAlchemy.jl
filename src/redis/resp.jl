@@ -16,17 +16,17 @@ function resp_read(socket::TCPSocket)
     magic_byte = socket >> Byte
     line = socket |> readline |> chomp!
 
-    if magic_byte == '+'
+    if magic_byte == Byte('+')
         line
-    elseif magic_byte == '-'
+    elseif magic_byte == Byte('-')
         RedisException(line) |> throw
-    elseif magic_byte == ':'
+    elseif magic_byte == Byte(':')
         parse(Int64, line)
-    elseif magic_byte == '$'
+    elseif magic_byte == Byte('$')
         line[1] == '-' && return nothing
         len = parse(Int64, line)
         socket >> (len + 2) |> chomp!
-    elseif magic_byte == '*'
+    elseif magic_byte == Byte('*')
         line[1] == '-' && return nothing
         len = parse(Int64, line)
         [resp_read(socket) for i in 1:len]

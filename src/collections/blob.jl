@@ -202,7 +202,7 @@ function write(sh::SeekableHandle, args...)
     write(sh, buffer.data)
 end
 
-"seek(handle, offset, origin), origin can be on of `:SEEK_SET`, `:SEEK_CUR` and `SEEK_END`"
+"seek(handle, offset, origin), origin can be on of `:SEEK_SET`, `:SEEK_CUR` and `:SEEK_END`"
 function seek(sh::SeekableHandle, offset::Int, origin::Symbol=:SEEK_SET)
     len = endof(sh.rb)
     pos = origin == :SEEK_SET ? 1      :
