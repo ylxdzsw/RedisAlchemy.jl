@@ -25,14 +25,15 @@ function RedisConnection(; host="127.0.0.1", port=6379, password="", db=0)
     connect_redis(string(host), port, password, db) |> RedisConnection
 end
 
-close(x::RedisConnection) = close(x.socket)
-release(x::RedisConnection) = begin
-    x.busy = false
-    notify(x.lock, all=false)
-end
-acquire(x::RedisConnection) = begin
-    x.busy && wait(x.lock)
-    x.busy = true
+function acquire(f::Function, rc::RedisConnection)
+    rc.busy && wait(rc.lock)
+    rc.busy = true
+    try
+        f(rc.socket)
+    finally
+        rc.busy = false
+        notify(rc.lock, all=false)
+    end
 end
 
 type RedisConnectionPool <: AbstractRedisConnection
@@ -49,19 +50,11 @@ type RedisConnectionPool <: AbstractRedisConnection
     end
 end
 
-function new_connection(rcp::RedisConnectionPool)
-    push!(rcp.queue, connect_redis(rcp.host, rcp.port, rcp.password, rcp.db))
-end
-
-function add_connection(rcp::RedisConnectionPool, socket::TCPSocket)
-    push!(rcp.queue, socket)
-end
-
 function find_avaliable(rcp::RedisConnectionPool)
     if isempty(rcp.queue)
         if rcp.upperbound > 0
             rcp.upperbound -= 1
-            new_connection(rcp)
+            push!(rcp.queue, connect_redis(rcp.host, rcp.port, rcp.password, rcp.db))
             find_avaliable(rcp)
         else # wait for one
             wait(rcp.cond)
@@ -76,5 +69,15 @@ function find_avaliable(rcp::RedisConnectionPool)
         else
             socket
         end
+    end
+end
+
+function acquire(f::Function, rcp::RedisConnectionPool)
+    socket = find_avaliable(rcp)
+    try
+        f(socket)
+    finally
+        push!(rcp.queue, socket)
+        notify(rcp.cond, all=false)
     end
 end
