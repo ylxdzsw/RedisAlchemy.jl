@@ -147,3 +147,36 @@ end
 function show{T}(io::IO, rv::AbstractRedisList{T})
     print(io, "RedisList{$T}($(rv.conn), \"$(rv.key)\")")
 end
+
+"""
+iterator batch 12 elements a round.
+"""
+const BATCHSIZE = 12
+
+function fetch_batch(rv::AbstractRedisList, index)
+    rv[index:index+BATCHSIZE-1]
+end
+
+function start(rv::AbstractRedisList)
+    cache = fetch_batch(rv, 1)
+    cache, start(cache), 1+BATCHSIZE
+end
+
+function next(rv::AbstractRedisList, iter)
+    cache, ci, index = iter
+    res, ci = next(cache, ci)
+
+    iter = if done(cache, ci)
+        cache = fetch_batch(rv, index)
+        cache, start(cache), index + BATCHSIZE
+    else
+        cache, ci, index
+    end
+
+    res, iter
+end
+
+function done(rv::AbstractRedisList, iter)
+    cache, ci, index = iter
+    done(cache, ci)
+end
