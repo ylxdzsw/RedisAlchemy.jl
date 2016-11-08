@@ -56,7 +56,7 @@ function getindex{T, S<:Integer}(rv::AbstractRedisList{T}, x::UnitRange{S})
 end
 
 function setindex!{T}(rv::AbstractRedisList{T}, value, index::Int64)
-    exec(rv.conn, "lset", rv.key, zero_index(index), serialize(T(value)))
+    exec(rv.conn, "lset", rv.key, zero_index(index), serialize(T, value))
 end
 
 function collect(rv::AbstractRedisList)
@@ -64,7 +64,7 @@ function collect(rv::AbstractRedisList)
 end
 
 function unshift!{T}(rv::AbstractRedisList{T}, value)
-    exec(rv.conn, "lpush", rv.key, serialize(T(value)))
+    exec(rv.conn, "lpush", rv.key, serialize(T, value))
     rv
 end
 
@@ -88,7 +88,7 @@ function shift!{T}(rv::SafeRedisList{T})
 end
 
 function push!{T}(rv::AbstractRedisList{T}, value)
-    exec(rv.conn, "rpush", rv.key, serialize(T(value)))
+    exec(rv.conn, "rpush", rv.key, serialize(T, value))
     rv
 end
 
