@@ -1,7 +1,7 @@
 const CRLF = "\r\n"
 
 "zero_index(0) == zero_index(1), not sure if it's OK"
-zero_index(x) = x > 0 ? x - 1 : x
+zero_index(x) = ifelse(x > 0, x - 1, x)
 
 "use with caution"
 function chomp!(s::Bytes)
