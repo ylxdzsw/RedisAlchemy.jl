@@ -4,13 +4,15 @@ abstract AbstractRedisConnection
 
 default_connection = nothing
 
-function set_default_redis_connection(x::AbstractRedisConnection)
+function set_default_redis_connection(x::AbstractRedisConnection=RedisConnection())
     global default_connection = x
 end
 
 function connect_redis(host::String, port::Int, password::String, db::Int)
-    connection = connect(host, port)
-    # TODO send password and select db
+    socket = connect(host, port)
+    password != "" && @assert resp_read(resp_send(socket, "auth", password)) == "OK"
+    db       != 0  && @assert resp_read(resp_send(socket, "select", "$db")) == "OK"
+    socket
 end
 
 type RedisConnection <: AbstractRedisConnection
