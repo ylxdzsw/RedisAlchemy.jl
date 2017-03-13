@@ -22,6 +22,7 @@ include("redis/exec.jl")
 
 include("collections/bit.jl")
 include("collections/blob.jl")
+include("collections/counter.jl")
 include("collections/dict.jl")
 include("collections/list.jl")
 include("collections/pipe.jl")
