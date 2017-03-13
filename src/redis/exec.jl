@@ -4,6 +4,8 @@ exec(conn::AbstractRedisConnection, x...) = acquire(conn) do socket
     resp_send(socket, map(bytify, x)...) |> resp_read
 end
 
+exec(c::AbstractRedisCollection, x...) = exec(c.conn, c.key, x...)
+
 bytify(x::Integer) = string(x)
 bytify(x::AbstractFloat) = string(x)
 bytify(x::AbstractString) = String(x)

@@ -1,6 +1,6 @@
 export RedisString, SafeRedisString
 
-abstract AbstractRedisString # <: AbstractString
+abstract AbstractRedisString <: AbstractRedisCollection
 
 immutable RedisString <: AbstractRedisString
     conn::AbstractRedisConnection

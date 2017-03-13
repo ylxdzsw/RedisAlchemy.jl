@@ -1,3 +1,5 @@
+__precompile__()
+
 module RedisAlchemy
 
 using OhMyJulia
@@ -7,6 +9,8 @@ import Base: getindex, setindex!, wait, start, endof, done, length, chomp!, sum,
              isnull, close, size, writemime, push!, unshift!, pop!, shift!, read,
              write, string, seek, seekstart, seekend, readall, readbytes, eof,
              flush, open, read!, readbytes!, collect, in
+
+abstract AbstractRedisCollection
 
 include("util.jl")
 include("exceptions.jl")

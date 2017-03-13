@@ -1,6 +1,6 @@
 export RedisDict, SafeRedisDict
 
-abstract AbstractRedisDict{K,V} # <: Associative{K,V}
+abstract AbstractRedisDict{K,V} <: AbstractRedisCollection
 
 immutable RedisDict{K,V} <: AbstractRedisDict{K,V}
     conn::AbstractRedisConnection

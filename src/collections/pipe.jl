@@ -1,7 +1,7 @@
 export RedisPipe, SafeRedisPipe, RedisBlockedQueue, SafeRedisBlockedQueue,
        enqueue!, dequeue!
 
-abstract AbstractRedisPipe{T} # <: Base.AbstractPipe
+abstract AbstractRedisPipe{T} <: AbstractRedisCollection
 
 immutable RedisPipe{T} <: AbstractRedisPipe{T}
     conn::AbstractRedisConnection

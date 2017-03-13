@@ -1,6 +1,6 @@
 export RedisBitVector
 
-immutable RedisBitVector # <: AbstractVector{Bool}
+immutable RedisBitVector <: AbstractRedisCollection
     conn::AbstractRedisConnection
     key::String
 end

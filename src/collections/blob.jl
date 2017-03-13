@@ -1,6 +1,6 @@
 export RedisBlob, SafeRedisBlob
 
-abstract AbstractRedisBlob # <: Bytes
+abstract AbstractRedisBlob <: AbstractRedisCollection
 
 immutable RedisBlob <: AbstractRedisBlob
     conn::AbstractRedisConnection

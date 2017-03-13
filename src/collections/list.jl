@@ -1,6 +1,6 @@
 export RedisList, SafeRedisList
 
-abstract AbstractRedisList{T} # <: AbstractVector{T}
+abstract AbstractRedisList{T} <: AbstractRedisCollection
 
 immutable RedisList{T} <: AbstractRedisList{T}
     conn::AbstractRedisConnection
