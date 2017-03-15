@@ -31,13 +31,13 @@ end
 
 reply{T}(rp::AbstractRedisPipe{T}, x::Any) = throw(ProtocolException("unexpected return value $x"))
 reply{T}(rp::AbstractRedisPipe{T}, x::Vector) = reply(rp, x[2])
-reply{T}(rp::AbstractRedisPipe{T}, x::Bytes) = reply(rp, String(x))
+reply{T}(rp::AbstractRedisPipe{T}, x::String) = reply(rp, x.data)
 
 reply{T}(rp::RedisPipe{T}, ::Void) = throw(TimeoutException("timeout"))
-reply{T}(rp::RedisPipe{T}, x::String) = deserialize(T, x)
+reply{T}(rp::RedisPipe{T}, x::Bytes) = deserialize(T, x)
 
 reply{T}(rp::SafeRedisPipe{T}, ::Void) = Nullable{T}()
-reply{T}(rp::SafeRedisPipe{T}, x::String) = Nullable(deserialize(T, x))
+reply{T}(rp::SafeRedisPipe{T}, x::Bytes) = Nullable(deserialize(T, x))
 
 function read{T}(rp::AbstractRedisPipe{T}, timeout::Integer=0)
     timeout < 0 && throw(ArgumentError("timeout must be non-negative"))
