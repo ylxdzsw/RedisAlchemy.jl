@@ -1,32 +1,32 @@
 export RedisPipe, SafeRedisPipe, RedisBlockedQueue, SafeRedisBlockedQueue,
        enqueue!, dequeue!
 
-abstract AbstractRedisPipe{T} <: AbstractRedisCollection
+abstract type AbstractRedisPipe{T} <: AbstractRedisCollection end
 
-immutable RedisPipe{T} <: AbstractRedisPipe{T}
+struct RedisPipe{T} <: AbstractRedisPipe{T}
     conn::AbstractRedisConnection
     key::String
 
-    RedisPipe(conn, key) = if serializeable(T)
+    RedisPipe{T}(conn, key) where T = if serializeable(T)
         new(conn, key)
     else
         throw(ArgumentError("RedisPipe currently not supports arbitrary element type"))
     end
 
-    RedisPipe(key) = RedisPipe{T}(default_connection, key)
+    RedisPipe{T}(key) where T = RedisPipe{T}(default_connection, key)
 end
 
-immutable SafeRedisPipe{T} <: AbstractRedisPipe{T}
+struct SafeRedisPipe{T} <: AbstractRedisPipe{T}
     conn::AbstractRedisConnection
     key::String
 
-    SafeRedisPipe(conn, key) = if serializeable(T)
+    SafeRedisPipe{T}(conn, key) where T = if serializeable(T)
         new(conn, key)
     else
         throw(ArgumentError("SafeRedisPipe currently not supports arbitrary element type"))
     end
 
-    SafeRedisPipe(key) = SafeRedisPipe{T}(default_connection, key)
+    SafeRedisPipe{T}(key) where T = SafeRedisPipe{T}(default_connection, key)
 end
 
 reply{T}(rp::AbstractRedisPipe{T}, x::Any) = throw(ProtocolException("unexpected return value $x"))
@@ -67,9 +67,9 @@ function show{T}(io::IO, rp::AbstractRedisPipe{T})
     print(io, "RedisList{$T}($(rp.conn), \"$(rp.key)\")")
 end
 
-typealias AbstractRedisBlockedQueue AbstractRedisPipe
-typealias RedisBlockedQueue RedisPipe
-typealias SafeRedisBlockedQueue SafeRedisPipe
+const AbstractRedisBlockedQueue = AbstractRedisPipe
+const RedisBlockedQueue         = RedisPipe
+const SafeRedisBlockedQueue     = SafeRedisPipe
 
 dequeue!{T}(rbq::AbstractRedisBlockedQueue{T}, timeout::Integer=0) = read(rbq, timeout)
 enqueue!{T}(rbq::AbstractRedisBlockedQueue{T}, value) = write(rbq, value)

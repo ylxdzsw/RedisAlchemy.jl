@@ -1,38 +1,38 @@
 export RedisDict, SafeRedisDict
 
-abstract AbstractRedisDict{K,V} <: AbstractRedisCollection
+abstract type AbstractRedisDict{K,V} <: AbstractRedisCollection end
 
-immutable RedisDict{K,V} <: AbstractRedisDict{K,V}
+struct RedisDict{K,V} <: AbstractRedisDict{K,V}
     conn::AbstractRedisConnection
     key::String
 
-    RedisDict(conn, key) = if serializeable(K) && serializeable(V)
+    RedisDict{K,V}(conn, key) where {K,V} = if serializeable(K) && serializeable(V)
         new(conn, key)
     else
         throw(ArgumentError("RedisDict currently not supports arbitrary element type"))
     end
 
-    RedisDict(key) = RedisDict{K,V}(default_connection, key)
+    RedisDict{K,V}(key) where {K,V} = RedisDict{K,V}(default_connection, key)
 end
 
-immutable SafeRedisDict{K,V} <: AbstractRedisDict{K,V}
+struct SafeRedisDict{K,V} <: AbstractRedisDict{K,V}
     conn::AbstractRedisConnection
     key::String
 
-    SafeRedisDict(conn, key) = if serializeable(K) && serializeable(V)
+    SafeRedisDict{K,V}(conn, key) where {K,V} = if serializeable(K) && serializeable(V)
         new(conn, key)
     else
         throw(ArgumentError("SafeRedisDict currently not supports arbitrary element type"))
     end
 
-    SafeRedisDict(key) = SafeRedisDict{K,V}(default_connection, key)
+    SafeRedisDict{K,V}(key) where {K,V} = SafeRedisDict{K,V}(default_connection, key)
 end
 
-immutable RedisDictKeyIterator{K,V}
+struct RedisDictKeyIterator{K,V}
     rd::AbstractRedisDict{K,V}
 end
 
-immutable RedisDictValueIterator{K,V}
+struct RedisDictValueIterator{K,V}
     rd::AbstractRedisDict{K,V}
 end
 

@@ -1,6 +1,6 @@
 export RedisCounter
 
-immutable RedisCounter{T} <: AbstractRedisCollection
+struct RedisCounter{T} <: AbstractRedisCollection
     conn::AbstractRedisConnection
     key::String
 end

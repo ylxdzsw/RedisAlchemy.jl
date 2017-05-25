@@ -1,19 +1,19 @@
 "when the client fail to connect to the server"
-immutable ConnectionException <: Exception
+struct ConnectionException <: Exception
     message::AbstractString
 end
 
 "when the response from the server doesn't conform to RESP"
-immutable ProtocolException <: Exception
+struct ProtocolException <: Exception
     message::AbstractString
 end
 
 "when the server returns an error response [http://redis.io/topics/protocol#resp-errors]()"
-immutable RedisException <: Exception
+struct RedisException <: Exception
     message::AbstractString
 end
 
 "when timeout expired"
-immutable TimeoutException <: Exception
+struct TimeoutException <: Exception
     message::AbstractString
 end

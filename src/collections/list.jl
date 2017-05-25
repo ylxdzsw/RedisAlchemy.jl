@@ -1,31 +1,31 @@
 export RedisList, SafeRedisList
 
-abstract AbstractRedisList{T} <: AbstractRedisCollection
+abstract type AbstractRedisList{T} <: AbstractRedisCollection end
 
-immutable RedisList{T} <: AbstractRedisList{T}
+struct RedisList{T} <: AbstractRedisList{T}
     conn::AbstractRedisConnection
     key::String
 
-    RedisList(conn, key) = if serializeable(T)
+    RedisList{T}(conn, key) where T = if serializeable(T)
         new(conn, key)
     else
         throw(ArgumentError("RedisList currently not supports arbitrary element type"))
     end
 
-    RedisList(key) = RedisList{T}(default_connection, key)
+    RedisList{T}(key) where T = RedisList{T}(default_connection, key)
 end
 
-immutable SafeRedisList{T} <: AbstractRedisList{T}
+struct SafeRedisList{T} <: AbstractRedisList{T}
     conn::AbstractRedisConnection
     key::String
 
-    SafeRedisList(conn, key) = if serializeable(T)
+    SafeRedisList{T}(conn, key) where T = if serializeable(T)
         new(conn, key)
     else
         throw(ArgumentError("SafeRedisList currently not supports arbitrary element type"))
     end
 
-    SafeRedisList(key) = SafeRedisList{T}(default_connection, key)
+    SafeRedisList{T}(key) where T = SafeRedisList{T}(default_connection, key)
 end
 
 function getindex{T}(rv::RedisList{T}, index::Int64)

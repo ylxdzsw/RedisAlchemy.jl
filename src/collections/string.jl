@@ -1,15 +1,15 @@
 export RedisString, SafeRedisString
 
-abstract AbstractRedisString <: AbstractRedisCollection
+abstract type AbstractRedisString <: AbstractRedisCollection end
 
-immutable RedisString <: AbstractRedisString
+struct RedisString <: AbstractRedisString
     conn::AbstractRedisConnection
     key::String
 end
 
 RedisString(key) = RedisString(default_connection, key)
 
-immutable SafeRedisString <: AbstractRedisString
+struct SafeRedisString <: AbstractRedisString
     conn::AbstractRedisConnection
     key::String
 end

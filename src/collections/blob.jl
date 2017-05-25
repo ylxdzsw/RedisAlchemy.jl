@@ -123,10 +123,6 @@ function read(bh::BufferedHandle{:r}, args...)
     read(bh.buffer, args...)
 end
 
-function readbytes(bh::BufferedHandle{:r}, args...)
-    readbytes(bh, args...)
-end
-
 function write(bh::BufferedHandle{:w}, args...)
     write(bh.buffer, args...)
 end
@@ -167,22 +163,9 @@ end
 
 function read(sh::SeekableHandle, T::Type, dims::Int64...)
     s = *(T.size, dims...)
-    buffer = readbytes(sh, s)
+    buffer = read(sh, s)
     length(buffer) != s && throw(EOFError())
     reinterpret(T, buffer, dims)
-end
-
-function readbytes(sh::SeekableHandle, nb::Int)
-    nb > 0 || error("invalid Array dimensions")
-    buffer = sh.rb[sh.ptr, sh.ptr + nb - 1]
-    sh.ptr += length(buffer)
-    buffer
-end
-
-function readbytes(sh::SeekableHandle)
-    buffer = sh.rb[sh.ptr, -1]
-    sh.ptr += length(buffer)
-    buffer
 end
 
 function write(sh::SeekableHandle, bytes::Bytes)

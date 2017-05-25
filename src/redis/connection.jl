@@ -1,6 +1,6 @@
 export RedisConnection, RedisConnectionPool, set_default_redis_connection
 
-abstract AbstractRedisConnection
+abstract type AbstractRedisConnection end
 
 default_connection = nothing
 
@@ -15,7 +15,7 @@ function connect_redis(host::String, port::Int, password::String, db::Int)
     socket
 end
 
-type RedisConnection <: AbstractRedisConnection
+mutable struct RedisConnection <: AbstractRedisConnection
     socket::TCPSocket
     lock::Condition
     busy::Bool
@@ -38,7 +38,7 @@ function acquire(f::Function, rc::RedisConnection)
     end
 end
 
-type RedisConnectionPool <: AbstractRedisConnection
+mutable struct RedisConnectionPool <: AbstractRedisConnection
     host::String
     port::Int
     password::String
