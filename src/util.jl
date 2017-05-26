@@ -17,8 +17,6 @@ car(x) = x[1]
 cdr(x) = x[2:end]
 cadr(x) = x[2]
 
-import Base: <<, >>
-
 <<(x::IO, y) = (print(x, y); x)
 <<(x::IO, y::Byte) = (write(x, y); x)
 <<(x::IO, y::Bytes) = (write(x, y); x)
