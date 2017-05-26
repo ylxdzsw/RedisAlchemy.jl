@@ -2,13 +2,11 @@
 
 "`commands` can be any thing that `write` and `sizeof` works properly"
 function resp_send(socket::TCPSocket, commands...)
-    buffer = IOBuffer() # reduce invocations of network IO
-    buffer << '*' << length(commands) << CRLF
+    socket << '*' << length(commands) << CRLF
     for command in commands
-        buffer << '$' << sizeof(command) << CRLF << command << CRLF
+        socket << '$' << sizeof(command) << CRLF << command << CRLF
     end
-    socket << buffer.data
-    socket
+    socket << flush
 end
 
 "possible return types: Int64, String, Bytes, Vector and Void"
