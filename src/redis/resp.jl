@@ -14,7 +14,7 @@ end
 "possible return types: Int64, String, Bytes, Vector and Void"
 function resp_read(socket::TCPSocket)
     magic_byte = socket >> Byte
-    line = socket |> readline |> chomp!
+    line = socket >> readline
 
     if magic_byte == Byte('+')
         line
