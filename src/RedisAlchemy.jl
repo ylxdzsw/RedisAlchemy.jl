@@ -5,7 +5,8 @@ module RedisAlchemy
 import Base: getindex, setindex!, wait, start, endof, done, length, chomp!, sum,
              next, keys, values, sort, sort!, show, isempty, ==, |, &, ~, $, +,
              isnull, close, size, push!, unshift!, pop!, shift!, read, write,
-             string, seek, seekstart, seekend, eof, flush, open, read!, collect, in
+             string, seek, seekstart, seekend, eof, flush, open, read!, collect,
+             in, wait, notify
 
 abstract type AbstractRedisCollection end
 
@@ -19,6 +20,7 @@ include("redis/exec.jl")
 
 # include("collections/bit.jl")
 # include("collections/blob.jl")
+include("collections/condition.jl")
 include("collections/counter.jl")
 include("collections/dict.jl")
 include("collections/list.jl")
