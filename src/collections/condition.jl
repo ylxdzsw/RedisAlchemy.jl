@@ -5,7 +5,7 @@ mutable struct RedisCondition{T}
     socket::IO
     listen::Bool
 
-    RedisCondition{T}(channels::AbstractString) where T = RedisCondition{T}(default_connection, channels)
+    RedisCondition{T}(channel::AbstractString) where T = RedisCondition{T}(default_connection, channel)
 
     RedisCondition{T}(rc::RedisConnection, key) where T = if serializeable(T)
         rc.busy && wait(rc.lock)
@@ -22,7 +22,7 @@ mutable struct RedisCondition{T}
 
         c
     else
-        throw(ArgumentError("RedisDict currently not supports arbitrary element type"))
+        throw(ArgumentError("RedisCondition currently not supports arbitrary element type"))
     end
 
     RedisCondition{T}(rcp::RedisConnectionPool, key) where T = if serializeable(T)
@@ -39,7 +39,7 @@ mutable struct RedisCondition{T}
 
         c
     else
-        throw(ArgumentError("RedisDict currently not supports arbitrary element type"))
+        throw(ArgumentError("RedisCondition currently not supports arbitrary element type"))
     end
 end
 
@@ -59,5 +59,5 @@ function notify(rc::RedisCondition{T}, val="") where T
     if rc.listen
         error("cannot notify a listening condition")
     end
-    resp_send(rc.socket, "publish", rc.key, val) |> resp_read
+    resp_send(rc.socket, "publish", rc.key, serialize(T, val)) |> resp_read
 end
