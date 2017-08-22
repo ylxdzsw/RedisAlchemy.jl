@@ -1,6 +1,6 @@
 export RedisBlob, SafeRedisBlob
 
-abstract AbstractRedisBlob <: AbstractRedisCollection
+abstract type AbstractRedisBlob <: AbstractRedisCollection end
 
 immutable RedisBlob <: AbstractRedisBlob
     conn::AbstractRedisConnection
@@ -75,17 +75,19 @@ function show(io::IO, rb::AbstractRedisBlob)
     print(io, "RedisBlob($(rb.conn), \"$(rb.key)\")")
 end
 
-abstract RedisBlobHandle # <: IO
+abstract type RedisBlobHandle end # <: IO
 
 type BufferedHandle{mode} <: RedisBlobHandle
     rb::RedisBlob
     buffer::IOBuffer
 
-    BufferedHandle(rb) = if mode == :r
-        rb = RedisBlob(rb.conn, rb.key)
-        new(rb, IOBuffer(rb[]))
-    else
-        new(rb, IOBuffer())
+    function BufferedHandle{mode}(rb) where mode
+        if mode == :r
+            rb = RedisBlob(rb.conn, rb.key)
+            new(rb, IOBuffer(rb[]))
+        else
+            new(rb, IOBuffer())
+        end
     end
 end
 
@@ -93,7 +95,7 @@ type SeekableHandle{mode} <: RedisBlobHandle
     rb::RedisBlob
     ptr::Int
 
-    SeekableHandle(rb) = begin
+    function SeekableHandle{mode}(rb) where mode
         mode == :w && (rb[] = "")
         rb = RedisBlob(rb.conn, rb.key)
         new(rb, 1)
