@@ -2,11 +2,12 @@
 
 "`commands` can be any thing that `write` and `sizeof` works properly"
 function resp_send(socket::TCPSocket, commands...)
-    socket << '*' << length(commands) << CRLF
+    buf = IOBuffer() # it turns out that buffering can boost the performance by magnititude.
+    buf << '*' << length(commands) << CRLF
     for command in commands
-        socket << '$' << sizeof(command) << CRLF << command << CRLF
+        buf << '$' << sizeof(command) << CRLF << command << CRLF
     end
-    socket << flush
+    socket << take!(buf) # since isnull(socket.sendbuf), no need to flush here
 end
 
 "possible return types: Int64, String, Bytes, Vector and Void"

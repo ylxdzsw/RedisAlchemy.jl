@@ -36,19 +36,19 @@ struct RedisDictValueIterator{K,V}
     rd::AbstractRedisDict{K,V}
 end
 
-function getindex{K,V}(rd::RedisDict{K,V}, key)
+function getindex(rd::RedisDict{K,V}, key) where {K,V}
     res = exec(rd.conn, "hget", rd.key, serialize(K, key))
     res == nothing && throw(KeyError(key))
     deserialize(V, res)
 end
 
-function getindex{K,V}(rd::SafeRedisDict{K,V}, key)
+function getindex(rd::SafeRedisDict{K,V}, key) where {K,V}
     res = exec(rd.conn, "hget", rd.key, serialize(K, key))
     res == nothing && return Nullable{V}()
     Nullable(deserialize(V, res))
 end
 
-function setindex!{K,V}(rd::AbstractRedisDict{K,V}, value, key)
+function setindex!(rd::AbstractRedisDict{K,V}, value, key) where {K,V}
     exec(rd.conn, "hset", rd.key, serialize(K, key), serialize(V, value))
 end
 
@@ -60,23 +60,23 @@ function values(rd::AbstractRedisDict)
     RedisDictValueIterator(rd)
 end
 
-function keytype{K,V}(::AbstractRedisDict{K,V})
+function keytype(::AbstractRedisDict{K,V}) where {K,V}
     K
 end
 
-function valtype{K,V}(::AbstractRedisDict{K,V})
+function valtype(::AbstractRedisDict{K,V}) where {K,V}
     V
 end
 
-function eltype{K,V}(::AbstractRedisDict{K,V})
+function eltype(::AbstractRedisDict{K,V}) where {K,V}
     Pair{K,V}
 end
 
-function eltype{K,V}(::RedisDictKeyIterator{K,V})
+function eltype(::RedisDictKeyIterator{K,V}) where {K,V}
     K
 end
 
-function eltype{K,V}(::RedisDictValueIterator{K,V})
+function eltype(::RedisDictValueIterator{K,V}) where {K,V}
     V
 end
 
@@ -98,7 +98,7 @@ function start(rd::AbstractRedisDict)
     cache, start(cache), handle
 end
 
-function next{K,V}(rd::AbstractRedisDict{K,V}, iter)
+function next(rd::AbstractRedisDict{K,V}, iter) where {K,V}
     cache, ci, handle = iter
     key, ci = next(cache, ci)
     val, ci = next(cache, ci)
@@ -147,7 +147,7 @@ function done(vi::RedisDictValueIterator, iter)
     done(vi.rd, iter)
 end
 
-function collect{K,V}(rd::AbstractRedisDict{K,V})
+function collect(rd::AbstractRedisDict{K,V}) where {K,V}
     raw = exec(rd.conn, "hgetall", rd.key)
     res = Vector{Pair{K,V}}(length(raw)÷2)
 
@@ -158,7 +158,7 @@ function collect{K,V}(rd::AbstractRedisDict{K,V})
     res
 end
 
-function collect{K,V}(ki::RedisDictKeyIterator{K,V})
+function collect(ki::RedisDictKeyIterator{K,V}) where {K,V}
     map(deserialize(K), exec(ki.rd.conn, "hkeys", ki.rd.key))
 end
 
@@ -179,6 +179,6 @@ function in(x, rd::AbstractRedisDict)
     throw(ArgumentError("Dicts only contain Pairs"))
 end
 
-function in{K,V}(x, ki::RedisDictKeyIterator{K,V})
+function in(x, ki::RedisDictKeyIterator{K,V}) where {K,V}
     exec(ki.rd.conn, "hexists", ki.rd.key, serialize(K, x)) |> Bool
 end

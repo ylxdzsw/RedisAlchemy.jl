@@ -2,14 +2,14 @@ export RedisBlob, SafeRedisBlob
 
 abstract type AbstractRedisBlob <: AbstractRedisCollection end
 
-immutable RedisBlob <: AbstractRedisBlob
+struct RedisBlob <: AbstractRedisBlob
     conn::AbstractRedisConnection
     key::String
 end
 
 RedisBlob(key) = RedisBlob(default_connection, key)
 
-immutable SafeRedisBlob <: AbstractRedisBlob
+struct SafeRedisBlob <: AbstractRedisBlob
     conn::AbstractRedisConnection
     key::String
 end
@@ -21,7 +21,7 @@ function getindex(rb::AbstractRedisBlob, x::Integer, y::Integer)
     exec(rb.conn, "getrange", rb.key, zero_index(x), zero_index(y))::Bytes
 end
 
-function getindex{T<:Integer}(rb::AbstractRedisBlob, x::UnitRange{T})
+function getindex(rb::AbstractRedisBlob, x::UnitRange{<:Integer})
     rb[x.start, x.stop]
 end
 
@@ -45,7 +45,7 @@ function setindex!(rb::AbstractRedisBlob, value, offset::Integer)
     rb
 end
 
-function setindex!{T<:Integer}(rb::AbstractRedisBlob, value, x::UnitRange{T})
+function setindex!(rb::AbstractRedisBlob, value, x::UnitRange{<:Integer})
     value = value |> string |> bytestring
     x.stop - x.start + 1 == sizeof(value) || throw(DimensionMismatch())
     rb[x.start] = value
@@ -216,7 +216,7 @@ function eof(sh::SeekableHandle)
     sh.ptr > endof(sh.rb)
 end
 
-function show{T<:RedisBlobHandle}(io::IO, rbh::T)
+function show(io::IO, rbh::T) where T <: RedisBlobHandle
     print(io, T, '(')
     show(io, rbh.rb)
     print(io, ')')
