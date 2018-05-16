@@ -83,7 +83,7 @@ end
 
 function shift!(rv::SafeRedisList{T}) where T
     res = exec(rv.conn, "lpop", rv.key)
-    res == nothing && Nullable{T}()
+    res == nothing && return Nullable{T}()
     Nullable(deserialize(T, res))
 end
 
@@ -106,7 +106,7 @@ end
 
 function pop!(rv::SafeRedisList{T}) where T
     res = exec(rv.conn, "rpop", rv.key)
-    res == nothing && Nullable{T}()
+    res == nothing && return Nullable{T}()
     Nullable(deserialize(T, res))
 end
 
