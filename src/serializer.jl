@@ -1,17 +1,17 @@
 serializeable(::ANY) = false
-serializeable{T<:Integer}(::Type{T}) = true
-serializeable{T<:AbstractFloat}(::Type{T}) = true
-serializeable{T<:String}(::Type{T}) = true
-serializeable{T<:Bytes}(::Type{T}) = true
+serializeable(::Type{<:Integer}) = true
+serializeable(::Type{<:AbstractFloat}) = true
+serializeable(::Type{<:String}) = true
+serializeable(::Type{<:Bytes}) = true
 
-serialize{T}(::Type{T}, x) = serialize(T(x))
+serialize(::Type{T}, x) where T = serialize(T(x))
 serialize(x::Integer) = string(x)
 serialize(x::AbstractFloat) = string(x)
 serialize(x::String) = x
 serialize(x::Bytes) = x
 
-deserialize(T::Type) = x::Bytes -> deserialize(T, x)
-deserialize{T<:Integer}(::Type{T}, x::Bytes) = parse(T, String(x))
-deserialize{T<:AbstractFloat}(::Type{T}, x::Bytes) = parse(T, String(x))
-deserialize{T<:String}(::Type{T}, x::Bytes) = String(x)
-deserialize{T<:Bytes}(::Type{T}, x::Bytes) = x
+deserialize(::Type{T}) where T = x::Bytes -> deserialize(T, x)
+deserialize(::Type{T}, x::Bytes) where T <: Integer = parse(T, String(x))
+deserialize(::Type{T}, x::Bytes) where T <: AbstractFloat = parse(T, String(x))
+deserialize(::Type{T}, x::Bytes) where T <: String = String(x)
+deserialize(::Type{T}, x::Bytes) where T <: Bytes = x
