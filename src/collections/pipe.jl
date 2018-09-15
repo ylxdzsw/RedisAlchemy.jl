@@ -29,28 +29,28 @@ struct SafeRedisPipe{T} <: AbstractRedisPipe{T}
     SafeRedisPipe{T}(key) where T = SafeRedisPipe{T}(default_connection, key)
 end
 
-reply{T}(rp::AbstractRedisPipe{T}, x::Any) = throw(ProtocolException("unexpected return value $x"))
-reply{T}(rp::AbstractRedisPipe{T}, x::Vector) = reply(rp, x[2])
-reply{T}(rp::AbstractRedisPipe{T}, x::String) = reply(rp, x.data)
+reply(rp::AbstractRedisPipe{T}, x::Any) where {T} = throw(ProtocolException("unexpected return value $x"))
+reply(rp::AbstractRedisPipe{T}, x::Vector) where {T} = reply(rp, x[2])
+reply(rp::AbstractRedisPipe{T}, x::String) where {T} = reply(rp, x.data)
 
-reply{T}(rp::RedisPipe{T}, ::Void) = throw(TimeoutException("timeout"))
-reply{T}(rp::RedisPipe{T}, x::Bytes) = deserialize(T, x)
+reply(rp::RedisPipe{T}, ::Void) where {T} = throw(TimeoutException("timeout"))
+reply(rp::RedisPipe{T}, x::Bytes) where {T} = deserialize(T, x)
 
-reply{T}(rp::SafeRedisPipe{T}, ::Void) = Nullable{T}()
-reply{T}(rp::SafeRedisPipe{T}, x::Bytes) = Nullable(deserialize(T, x))
+reply(rp::SafeRedisPipe{T}, ::Void) where {T} = Nullable{T}()
+reply(rp::SafeRedisPipe{T}, x::Bytes) where {T} = Nullable(deserialize(T, x))
 
-function read{T}(rp::AbstractRedisPipe{T}, timeout::Integer=0)
+function read(rp::AbstractRedisPipe{T}, timeout::Integer=0) where T
     timeout < 0 && throw(ArgumentError("timeout must be non-negative"))
     res = exec(rp.conn, "blpop", rp.key, timeout)
     reply(rp, res)
 end
 
-function peek{T}(rp::AbstractRedisPipe{T})
+function peek(rp::AbstractRedisPipe{T}) where T
     res = exec(rp.conn, "lindex", rp.key, 0)
     reply(rp, res)
 end
 
-function write{T}(rp::AbstractRedisPipe{T}, value)
+function write(rp::AbstractRedisPipe{T}, value) where T
     exec(rp.conn, "rpush", rp.key, serialize(T(value)))
     rp
 end
@@ -63,7 +63,7 @@ function isempty(rp::AbstractRedisPipe)
     length(rp) == 0
 end
 
-function show{T}(io::IO, rp::AbstractRedisPipe{T})
+function show(io::IO, rp::AbstractRedisPipe{T}) where T
     print(io, "RedisList{$T}($(rp.conn), \"$(rp.key)\")")
 end
 
@@ -71,5 +71,5 @@ const AbstractRedisBlockedQueue = AbstractRedisPipe
 const RedisBlockedQueue         = RedisPipe
 const SafeRedisBlockedQueue     = SafeRedisPipe
 
-dequeue!{T}(rbq::AbstractRedisBlockedQueue{T}, timeout::Integer=0) = read(rbq, timeout)
-enqueue!{T}(rbq::AbstractRedisBlockedQueue{T}, value) = write(rbq, value)
+dequeue!(rbq::AbstractRedisBlockedQueue{T}, timeout::Integer=0) where {T} = read(rbq, timeout)
+enqueue!(rbq::AbstractRedisBlockedQueue{T}, value) where {T} = write(rbq, value)

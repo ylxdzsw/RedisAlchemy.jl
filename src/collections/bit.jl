@@ -10,7 +10,7 @@ function getindex(rbv::RedisBitVector, index::Int64)
 end
 
 function setindex!(rbv::RedisBitVector, value::Bool, key::Int64)
-    exec(rbv.conn, "setbit", key, value?"1":"0")
+    exec(rbv.conn, "setbit", key, value ? "1" : "0")
 end
 
 function isnull(rbv::RedisBitVector)
@@ -55,6 +55,6 @@ end
 
 "Caution: Redis consider the right of the string as padded with zeros, so it may act unexpectly when finding `false`"
 function findfirst(rbv::RedisBitVector, v::Bool=true)
-    exec(rbv.conn, "bitpos", rbv.key, v?"1":"0")
+    exec(rbv.conn, "bitpos", rbv.key, v ? "1" : "0")
     1 + wait(rbv.conn)::Int64
 end
