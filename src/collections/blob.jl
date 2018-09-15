@@ -77,7 +77,7 @@ end
 
 abstract type RedisBlobHandle end # <: IO
 
-type BufferedHandle{mode} <: RedisBlobHandle
+mutable struct BufferedHandle{mode} <: RedisBlobHandle
     rb::RedisBlob
     buffer::IOBuffer
 
@@ -91,7 +91,7 @@ type BufferedHandle{mode} <: RedisBlobHandle
     end
 end
 
-type SeekableHandle{mode} <: RedisBlobHandle
+mutable struct SeekableHandle{mode} <: RedisBlobHandle
     rb::RedisBlob
     ptr::Int
 

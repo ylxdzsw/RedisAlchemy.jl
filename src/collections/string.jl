@@ -21,7 +21,7 @@ function getindex(rs::AbstractRedisString, x::Integer, y::Integer)
     exec(rs.conn, "getrange", rs.key, zero_index(x), zero_index(y)) |> String
 end
 
-function getindex{T<:Integer}(rs::AbstractRedisString, x::UnitRange{T})
+function getindex(rs::AbstractRedisString, x::UnitRange{T}) where T<:Integer
     rs[x.start, x.stop]
 end
 
@@ -45,7 +45,7 @@ function setindex!(rs::AbstractRedisString, value, offset::Integer)
     rs
 end
 
-function setindex!{T<:Integer}(rs::AbstractRedisString, value, x::UnitRange{T})
+function setindex!(rs::AbstractRedisString, value, x::UnitRange{T}) where T<:Integer
     value = value |> string |> String
     x.stop - x.start + 1 == sizeof(value) || throw(DimensionMismatch())
     rs[x.start] = value
