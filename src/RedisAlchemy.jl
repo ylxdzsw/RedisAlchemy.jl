@@ -2,8 +2,10 @@ __precompile__()
 
 module RedisAlchemy
 
-import Base: getindex, setindex!, wait, start, endof, done, length, chomp!, sum,
-             next, keys, values, sort, sort!, show, isempty, ==, |, &, ~, $, +,
+using Sockets
+
+import Base: getindex, setindex!, wait, start, endof, done, length, sum,
+             next, keys, values, sort, sort!, show, isempty, ==, |, &, ⊻, ~, +,
              isnull, close, size, push!, unshift!, pop!, shift!, read, write,
              string, seek, seekstart, seekend, eof, flush, open, read!, collect,
              in, wait, notify
