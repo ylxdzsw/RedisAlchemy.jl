@@ -56,8 +56,6 @@ end
 
 "wake up all"
 function notify(rc::RedisCondition{T}, val="") where T
-    if rc.listen
-        error("cannot notify a listening condition")
-    end
+    rc.listen && error("cannot notify a listening condition")
     resp_send(rc.socket, "publish", rc.key, serialize(T, val)) |> resp_read
 end

@@ -24,3 +24,11 @@ cadr(x) = x[2]
 
 >>(x::IO, y) = read(x, y)
 >>(x::IO, f::Function) = f(x)
+
+macro some(x)
+    quote
+        s = $(esc(x))
+        s == nothing && return nothing
+        s
+    end
+end

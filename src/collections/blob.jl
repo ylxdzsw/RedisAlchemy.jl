@@ -1,81 +1,62 @@
-export RedisBlob, SafeRedisBlob
+export RedisBlob
 
-abstract type AbstractRedisBlob <: AbstractRedisCollection end
-
-struct RedisBlob <: AbstractRedisBlob
+struct RedisBlob <: AbstractRedisCollection
     conn::AbstractRedisConnection
     key::String
 end
 
 RedisBlob(key) = RedisBlob(default_connection, key)
 
-struct SafeRedisBlob <: AbstractRedisBlob
-    conn::AbstractRedisConnection
-    key::String
-end
-
-SafeRedisBlob(key) = SafeRedisBlob(default_connection, key)
-
-function getindex(rb::AbstractRedisBlob, x::Integer, y::Integer)
+function getindex(rb::RedisBlob, x::Integer, y::Integer)
     # it is always not null: non-exist keys are treated as empty string by redis
     exec(rb.conn, "getrange", rb.key, zero_index(x), zero_index(y))::Bytes
 end
 
-function getindex(rb::AbstractRedisBlob, x::UnitRange{<:Integer})
+function getindex(rb::RedisBlob, x::UnitRange{<:Integer})
     rb[x.start, x.stop]
 end
 
-function getindex(rb::AbstractRedisBlob, x::Integer)
+function getindex(rb::RedisBlob, x::Integer)
     rb[x, x][1]
 end
 
 function getindex(rb::RedisBlob, ::Colon=Colon())
     res = exec(rb.conn, "get", rb.key)
-    res == nothing && throw(KeyError(rb.key))
-    res::Bytes
+    @some(res)::Bytes
 end
 
-function getindex(rb::SafeRedisBlob, ::Colon=Colon())
-    res = exec(rb.conn, "get", rb.key)
-    Nullable{Bytes}(res)
-end
-
-function setindex!(rb::AbstractRedisBlob, value, offset::Integer)
+function setindex!(rb::RedisBlob, value, offset::Integer)
     exec(rb.conn, "setrange", rb.key, zero_index(offset), value)
     rb
 end
 
-function setindex!(rb::AbstractRedisBlob, value, x::UnitRange{<:Integer})
-    value = value |> string |> bytestring
+function setindex!(rb::RedisBlob, value, x::UnitRange{<:Integer})
+    value = unsafe_wrap(Bytes, string(value))
     x.stop - x.start + 1 == sizeof(value) || throw(DimensionMismatch())
     rb[x.start] = value
     rb
 end
 
-function setindex!(rb::AbstractRedisBlob, value, ::Colon=Colon())
+function setindex!(rb::RedisBlob, value, ::Colon=Colon())
     exec(rb.conn, "set", rb.key, value)
     rb
 end
 
 "this methods should always be used in the form of `rb += xx`"
-function (+)(rb::AbstractRedisBlob, value)
+function (+)(rb::RedisBlob, value)
     exec(rb.conn, "append", rb.key, value)
     rb
 end
 
-function length(rb::AbstractRedisBlob)
+function length(rb::RedisBlob)
     exec(rb.conn, "strlen", rb.key)::Int64
 end
 
-function endof(rb::AbstractRedisBlob)
+function lastindex(rb::RedisBlob)
     length(rb)
 end
 
-function show(io::IO, rb::AbstractRedisBlob)
-    print(io, "RedisBlob($(rb.conn), \"$(rb.key)\")")
-end
-
-abstract type RedisBlobHandle end # <: IO
+abstract type RedisBlobHandle end
 
 mutable struct BufferedHandle{mode} <: RedisBlobHandle
     rb::RedisBlob
@@ -189,7 +170,7 @@ end
 
 "seek(handle, offset, origin), origin can be on of `:SEEK_SET`, `:SEEK_CUR` and `:SEEK_END`"
 function seek(sh::SeekableHandle, offset::Int, origin::Symbol=:SEEK_SET)
-    len = endof(sh.rb)
+    len = lastindex(sh.rb)
     pos = origin == :SEEK_SET ? 1      :
           origin == :SEEK_CUR ? sh.ptr :
           origin == :SEEK_END ? len+1  :
@@ -213,7 +194,7 @@ function close(sh::SeekableHandle)
 end
 
 function eof(sh::SeekableHandle)
-    sh.ptr > endof(sh.rb)
+    sh.ptr > lastindex(sh.rb)
 end
 
 function show(io::IO, rbh::T) where T <: RedisBlobHandle

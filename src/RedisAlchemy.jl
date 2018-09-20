@@ -3,14 +3,19 @@ __precompile__()
 module RedisAlchemy
 
 using Sockets
+using Serialization
 
-import Base: getindex, setindex!, wait, start, endof, done, length, sum,
-             next, keys, values, sort, sort!, show, isempty, ==, |, &, ⊻, ~, +,
-             isnull, close, size, push!, unshift!, pop!, shift!, read, write,
-             string, seek, seekstart, seekend, eof, flush, open, read!, collect,
-             in, wait, notify
+import Base: getindex, setindex!, wait, iterate, lastindex, length, sum,
+             keys, values, sort, sort!, show, isempty, ==, |, &, ⊻, ~, +,
+             close, size, push!, pushfirst!, pop!, popfirst!, read, write,
+             string, seek, seekstart, seekend, eof, flush, open, read!,
+             collect, in, wait, notify
 
 abstract type AbstractRedisCollection end
+
+function show(io::IO, rp::T) where T <: AbstractRedisCollection
+    print(io, "$T(\"$(rp.key)\")")
+end
 
 include("util.jl")
 include("exceptions.jl")

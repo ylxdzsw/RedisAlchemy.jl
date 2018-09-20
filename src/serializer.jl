@@ -1,4 +1,4 @@
-serializeable(::ANY) = false
+serializeable(::Type) = false
 serializeable(::Type{<:Integer}) = true
 serializeable(::Type{<:AbstractFloat}) = true
 serializeable(::Type{<:String}) = true

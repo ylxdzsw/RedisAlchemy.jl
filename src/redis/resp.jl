@@ -7,11 +7,10 @@ function resp_send(socket::TCPSocket, commands...)
     for command in commands
         buf << '$' << sizeof(command) << CRLF << command << CRLF
     end
-    socket << take!(buf) # since isnull(socket.sendbuf), no need to flush here
+    socket << take!(buf) # sockets are not buffered so no need to flush here
 end
 
-"possible return types: Int64, String, Bytes, Vector and Void"
-function resp_read(socket::TCPSocket)
+function resp_read(socket::TCPSocket)::Union{Int64, String, Bytes, Vector, Nothing}
     magic_byte = socket >> Byte
     line = socket >> readline
 
