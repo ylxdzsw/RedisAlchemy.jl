@@ -63,7 +63,7 @@ function find_avaliable(rcp::RedisConnectionPool)
             find_avaliable(rcp)
         end
     else
-        socket = shift!(rcp.queue)
+        socket = popfirst!(rcp.queue)
         if 4 < socket.status < 8 # drop this and find another
             close(socket)
             rcp.upperbound += 1
