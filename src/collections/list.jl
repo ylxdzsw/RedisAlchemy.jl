@@ -77,6 +77,10 @@ function length(rv::RedisList)
     exec(rv.conn, "llen", rv.key)::Int64
 end
 
+function lastindex(rv::RedisList)
+    length(rv)
+end
+
 function size(rv::RedisList)
     (length(rv),)
 end
