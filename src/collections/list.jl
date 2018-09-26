@@ -111,6 +111,12 @@ function sort!(rv::RedisList{<:AbstractString}; rev::Bool=false)
     exec(rv.conn, "sort", rv.key, "alpha", order, "store", rv.key)::Int64
 end
 
+"keep only the first `n` elements of `rv`"
+function resize!(rv::RedisList, n::Integer)
+    n <= 1 && throw(ArgumentError("n must > 1"))
+    exec(rv.conn, "ltrim", rv.key, 0, n-1)
+end
+
 """
 iterator batch 12 elements a round.
 """

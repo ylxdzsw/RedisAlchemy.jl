@@ -25,6 +25,8 @@ function read(rp::RedisPipe, timeout::Integer=0)
     reply(rp, res)
 end
 
+take!(rp::RedisPipe, timeout::Integer=0) = read(rp, timeout)
+
 function peek(rp::RedisPipe)
     res = exec(rp.conn, "lindex", rp.key, 0)
     reply(rp, @some(res))
@@ -34,6 +36,8 @@ function write(rp::RedisPipe{T}, value) where T
     exec(rp.conn, "rpush", rp.key, serialize(T, value))
     rp
 end
+
+put!(rp::RedisPipe, value) = write(rp, value)
 
 function length(rp::RedisPipe)
     exec(rp.conn, "llen", rp.key)::Int64

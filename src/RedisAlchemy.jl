@@ -9,7 +9,7 @@ import Base: getindex, setindex!, wait, iterate, lastindex, length, sum,
              keys, values, sort, sort!, show, isempty, ==, |, &, ⊻, ~, +,
              close, size, push!, pushfirst!, pop!, popfirst!, read, write,
              string, seek, seekstart, seekend, eof, flush, open, read!,
-             collect, in, wait, notify
+             collect, in, wait, notify, resize!, put!, take!
 
 abstract type AbstractRedisCollection end
 
